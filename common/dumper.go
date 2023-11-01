@@ -410,6 +410,7 @@ func Dumper(log *xlog.Log, args *config.Config) {
 
 	tables := make([][]string, len(databases))
 	for i, database := range databases {
+		database = strings.Split(database,"@")[0]
 		if args.Table != "" {
 			tables[i] = strings.Split(args.Table, ",")
 		} else {
