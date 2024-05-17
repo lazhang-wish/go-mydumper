@@ -163,6 +163,12 @@ func restoreTable(log *xlog.Log, table string, conn *Connection) int {
 	for _, query := range querys {
 		if !strings.HasPrefix(query, "/*") && query != "" {
 			rows, err := conn.StreamFetch(query)
+			if err != nil {
+				log.Info(fmt.Sprintf("msg length: %d, pick %d", len(query), min(len(query), 100)))
+				substring := query[:min(len(query), 100)]
+				log.Error(substring)
+			}
+
 			AssertNil(err)
 			if rows != nil {
 				rows.Close()
@@ -171,6 +177,13 @@ func restoreTable(log *xlog.Log, table string, conn *Connection) int {
 	}
 	log.Info("restoring.tables[%s.%s].parts[%s].thread[%d].done...", db, tbl, part, conn.ID)
 	return bytes
+}
+
+func min(a, b int) int {
+	if b > a {
+		return a
+	}
+	return b
 }
 
 // Loader used to start the loader worker.

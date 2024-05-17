@@ -11,10 +11,12 @@ package common
 
 import (
 	"database/sql"
+	"sync"
+
 	_ "github.com/go-sql-driver/mysql"
+
 	_ "github.com/xelabs/go-mysqlstack/sqlparser/depends/sqltypes"
 	"github.com/xelabs/go-mysqlstack/xlog"
-	"sync"
 )
 
 // Pool tuple.
@@ -28,11 +30,15 @@ type Pool struct {
 type Connection struct {
 	ID     int
 	client *sql.DB
+	log    *xlog.Log
 }
 
 // StreamFetch used to the results with streaming.
 func (conn *Connection) StreamFetch(query string) (*sql.Rows, error) {
-	return conn.client.Query(query)
+	if len(query) > 0 {
+		return conn.client.Query(query)
+	}
+	return nil, nil
 }
 
 // NewPool creates the new pool.
@@ -70,6 +76,7 @@ func (p *Pool) Get() *Connection {
 		return nil
 	}
 	conn := <-conns
+	conn.log = p.log
 	return conn
 }
 

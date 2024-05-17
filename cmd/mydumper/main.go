@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/xelabs/go-mydumper/common"
 	"github.com/xelabs/go-mydumper/config"
@@ -21,13 +22,15 @@ import (
 )
 
 var (
-	flagConfig string
+	flagConfig     string
+	debugLogConfig bool
 
 	log = xlog.NewStdLog(xlog.Level(xlog.INFO))
 )
 
 func initFlags() {
 	flag.StringVar(&flagConfig, "c", "", "config file")
+	flag.BoolVar(&debugLogConfig, "D", false, "enable debug log")
 }
 
 func usage() {
@@ -39,6 +42,12 @@ func main() {
 	initFlags()
 	flag.Usage = func() { usage() }
 	flag.Parse()
+
+	if debugLogConfig {
+		log = xlog.NewStdLog(xlog.Level(xlog.DEBUG))
+	}
+
+	log.Info("log level " + strconv.FormatBool(debugLogConfig))
 
 	if flagConfig == "" {
 		usage()
