@@ -21,9 +21,9 @@ import (
 )
 
 var (
-	flagOverwriteTables                     bool
-	flagPort, flagThreads                   int
-	flagUser, flagPasswd, flagHost, flagDir string
+	flagOverwriteTables                                   bool
+	flagPort, flagThreads                                 int
+	flagUser, flagPasswd, flagHost, flagDir, flagDatabase string
 
 	log = xlog.NewStdLog(xlog.Level(xlog.INFO))
 )
@@ -34,6 +34,7 @@ func initFlags() {
 	flag.StringVar(&flagHost, "h", "", "The host to connect to")
 	flag.IntVar(&flagPort, "P", 3306, "TCP/IP port to connect to")
 	flag.StringVar(&flagDir, "d", "", "Directory of the dump to import")
+	flag.StringVar(&flagDatabase, "D", "", "Target database")
 	flag.IntVar(&flagThreads, "t", 16, "Number of threads to use")
 	flag.BoolVar(&flagOverwriteTables, "o", false, "Drop tables if they already exist")
 }
@@ -58,6 +59,7 @@ func main() {
 		Password:        flagPasswd,
 		Address:         fmt.Sprintf("%s:%d", flagHost, flagPort),
 		Outdir:          flagDir,
+		Database:        flagDatabase,
 		Threads:         flagThreads,
 		IntervalMs:      10 * 1000,
 		OverwriteTables: flagOverwriteTables,

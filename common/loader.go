@@ -166,6 +166,7 @@ func restoreTable(log *xlog.Log, table string, conn *Connection) int {
 			if err != nil {
 				log.Info(fmt.Sprintf("msg length: %d, pick %d", len(query), min(len(query), 100)))
 				substring := query[:min(len(query), 100)]
+				log.Error(fmt.Sprintf("%+v\n", conn.client))
 				log.Error(substring)
 			}
 
@@ -188,7 +189,7 @@ func min(a, b int) int {
 
 // Loader used to start the loader worker.
 func Loader(log *xlog.Log, args *config.Config) {
-	pool, err := NewPool(log, args.Threads, args.Address, args.User, args.Password, "", "")
+	pool, err := NewPool(log, args.Threads, args.Address, args.User, args.Password, "", args.Database)
 	AssertNil(err)
 	defer pool.Close()
 
