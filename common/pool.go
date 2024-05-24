@@ -47,6 +47,7 @@ func NewPool(log *xlog.Log, cap int, address string, user string, password strin
 	var client *sql.DB
 	var err error
 	if vars != "" {
+		log.Debug(user + ":" + password + "@tcp(" + address + ")/" + database + "?" + vars)
 		client, err = sql.Open("mysql", user+":"+password+"@tcp("+address+")/"+database+"?"+vars)
 		if err != nil {
 			return nil, err

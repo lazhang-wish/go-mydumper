@@ -10,6 +10,7 @@
 package common
 
 import (
+	"bytes"
 	"compress/gzip"
 	"encoding/csv"
 	"errors"
@@ -133,6 +134,21 @@ func dumpTable(log *xlog.Log, conn *Connection, args *config.Config, database st
 					byteCol := col.([]byte)
 					values = append(values, fmt.Sprintf(`"%s"`, EscapeBytes(byteCol)))
 					rowsize += len(byteCol) + 2
+
+				case "BINARY":
+					byteCol := col.([]byte)
+					values = append(values, "0x"+fmt.Sprintf(`"%x"`, EscapeBytes(byteCol)))
+				case "DATE":
+					byteCol := col.([]byte)
+					zeroDate := []byte{48, 48, 48, 48, 45, 48, 48, 45, 48, 48}
+
+					if bytes.Equal(byteCol, zeroDate) {
+						values = append(values, "NULL")
+						rowsize += 4
+					} else {
+						values = append(values, fmt.Sprintf("%s", EscapeBytes(byteCol)))
+						rowsize += len(byteCol) + 2
+					}
 				default:
 					// TODO:  check/test the following types
 					// "BINARY" "BIT" "BLOB" "DATE" "DATETIME" "DOUBLE" "ENUM" "GEOMETRY"
@@ -230,6 +246,8 @@ func dumpTableCsv(log *xlog.Log, conn *Connection, args *config.Config, database
 		where = fmt.Sprintf(" WHERE %v", v)
 	}
 
+	log.Debug(fmt.Sprintf("SELECT %s FROM `%s`.`%s` %s", strings.Join(selfields, ", "), database, table, where))
+
 	rows, err := conn.StreamFetch(fmt.Sprintf("SELECT %s FROM `%s`.`%s` %s", strings.Join(selfields, ", "), database, table, where))
 	AssertNil(err)
 
@@ -271,6 +289,7 @@ func dumpTableCsv(log *xlog.Log, conn *Connection, args *config.Config, database
 		values := make([]string, 0, 16)
 		rowsize := 3 // start and end paren plus newline
 		for i, col := range cols {
+			// log.Debug("Dest type %s", reflect.TypeOf(colPtrs[i]))
 			colKind := fieldTypes[i]
 			if col == nil || colKind == "NULL" {
 				values = append(values, "NULL")
@@ -285,6 +304,22 @@ func dumpTableCsv(log *xlog.Log, conn *Connection, args *config.Config, database
 					str := fmt.Sprintf(`%s`, col)
 					values = append(values, str)
 					rowsize += len(str)
+				case "BINARY":
+					byteCol := col.([]byte)
+					str := fmt.Sprintf("0x%x", byteCol)
+					values = append(values, str)
+					rowsize += len(str)
+				case "DATE":
+					byteCol := col.([]byte)
+					zeroDate := []byte{48, 48, 48, 48, 45, 48, 48, 45, 48, 48}
+
+					if bytes.Equal(byteCol, zeroDate) {
+						values = append(values, "NULL")
+						rowsize += 4
+					} else {
+						values = append(values, fmt.Sprintf("%s", EscapeBytes(byteCol)))
+						rowsize += len(byteCol) + 2
+					}
 				default:
 					// TODO:  check/test the following types
 					// "BINARY" "BIT" "BLOB" "DATE" "DATETIME" "DOUBLE" "ENUM" "GEOMETRY"

@@ -47,7 +47,7 @@ func main() {
 		log = xlog.NewStdLog(xlog.Level(xlog.DEBUG))
 	}
 
-	log.Info("log level " + strconv.FormatBool(debugLogConfig))
+	log.Info("debug log level " + strconv.FormatBool(debugLogConfig))
 
 	if flagConfig == "" {
 		usage()
