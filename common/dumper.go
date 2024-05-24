@@ -137,18 +137,7 @@ func dumpTable(log *xlog.Log, conn *Connection, args *config.Config, database st
 
 				case "BINARY":
 					byteCol := col.([]byte)
-					values = append(values, "0x"+fmt.Sprintf(`"%x"`, EscapeBytes(byteCol)))
-				case "DATE":
-					byteCol := col.([]byte)
-					zeroDate := []byte{48, 48, 48, 48, 45, 48, 48, 45, 48, 48}
-
-					if bytes.Equal(byteCol, zeroDate) {
-						values = append(values, "NULL")
-						rowsize += 4
-					} else {
-						values = append(values, fmt.Sprintf("%s", EscapeBytes(byteCol)))
-						rowsize += len(byteCol) + 2
-					}
+					values = append(values, "0x"+fmt.Sprintf("%x", byteCol))
 				default:
 					// TODO:  check/test the following types
 					// "BINARY" "BIT" "BLOB" "DATE" "DATETIME" "DOUBLE" "ENUM" "GEOMETRY"
