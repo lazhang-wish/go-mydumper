@@ -329,7 +329,7 @@ func dumpTableCsv(log *xlog.Log, conn *Connection, args *config.Config, database
 					// "JSON" "LONGBLOB" "MEDIUMBLOB" "SET" "TIME" "TIMESTAMP" "TINYBLOB"
 					// "VARBINARY" "YEAR"
 					byteCol := col.([]byte)
-					values = append(values, fmt.Sprintf(`"%s"`, EscapeBytes(byteCol)))
+					values = append(values, fmt.Sprintf("%s", EscapeBytes(byteCol)))
 					rowsize += len(byteCol) + 2
 				}
 			}
