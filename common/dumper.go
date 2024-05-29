@@ -137,7 +137,21 @@ func dumpTable(log *xlog.Log, conn *Connection, args *config.Config, database st
 
 				case "BINARY":
 					byteCol := col.([]byte)
-					values = append(values, "0x"+fmt.Sprintf("%x", byteCol))
+					str := fmt.Sprintf("0x%x", byteCol)
+					values = append(values, str)
+					rowsize += len(str)
+
+				case "DATE":
+					byteCol := col.([]byte)
+					zeroDate := []byte{48, 48, 48, 48, 45, 48, 48, 45, 48, 48}
+
+					if bytes.Equal(byteCol, zeroDate) {
+						values = append(values, "NULL")
+						rowsize += 4
+					} else {
+						values = append(values, fmt.Sprintf(`"%s"`, EscapeBytes(byteCol)))
+						rowsize += len(byteCol) + 2
+					}
 				default:
 					// TODO:  check/test the following types
 					// "BINARY" "BIT" "BLOB" "DATE" "DATETIME" "DOUBLE" "ENUM" "GEOMETRY"
@@ -315,7 +329,7 @@ func dumpTableCsv(log *xlog.Log, conn *Connection, args *config.Config, database
 					// "JSON" "LONGBLOB" "MEDIUMBLOB" "SET" "TIME" "TIMESTAMP" "TINYBLOB"
 					// "VARBINARY" "YEAR"
 					byteCol := col.([]byte)
-					values = append(values, fmt.Sprintf("%s", EscapeBytes(byteCol)))
+					values = append(values, fmt.Sprintf(`"%s"`, EscapeBytes(byteCol)))
 					rowsize += len(byteCol) + 2
 				}
 			}
