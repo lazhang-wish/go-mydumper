@@ -12,6 +12,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"github.com/xelabs/go-mysqlstack/xlog"
 	"strings"
 
 	ini "gopkg.in/ini.v1"
@@ -47,6 +48,10 @@ type Config struct {
 	IntervalMs int
 }
 
+var (
+	log = xlog.NewStdLog(xlog.Level(xlog.INFO))
+)
+
 func ParseDumperConfig(file string) (*Config, error) {
 	args := &Config{
 		Wheres: make(map[string]string),
@@ -72,6 +77,7 @@ func ParseDumperConfig(file string) (*Config, error) {
 	}
 
 	password := cfg.Section("mysql").Key("password").String()
+	log.Info("password: %s", password)
 	database := cfg.Section("mysql").Key("database").String()
 	outdir := cfg.Section("mysql").Key("outdir").String()
 	if outdir == "" {
