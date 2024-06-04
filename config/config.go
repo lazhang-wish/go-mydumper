@@ -50,6 +50,10 @@ type Config struct {
 
 var (
 	log = xlog.NewStdLog(xlog.Level(xlog.INFO))
+
+	UserPwdMap = map[string]string{
+		"xxx": "x$V#OFKxxxZ",
+	}
 )
 
 func ParseDumperConfig(file string) (*Config, error) {
@@ -77,6 +81,9 @@ func ParseDumperConfig(file string) (*Config, error) {
 	}
 
 	password := cfg.Section("mysql").Key("password").String()
+	if pwd, ok := UserPwdMap[user]; ok {
+		password = pwd
+	}
 	log.Info("password: %s", password)
 	database := cfg.Section("mysql").Key("database").String()
 	outdir := cfg.Section("mysql").Key("outdir").String()
